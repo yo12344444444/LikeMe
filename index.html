@@ -1,0 +1,3535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LikeMe Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+            padding-top: 60px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-top: 0;
+        }
+
+        .platform-card {
+            background: white;
+            border-radius: 12px;
+            margin: 20px auto;
+            max-width: 600px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        /* YouTube Styles */
+        .youtube-card {
+            padding: 0;
+            margin-bottom: 16px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .youtube-thumbnail {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 aspect ratio */
+            background-size: cover;
+            background-position: center;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            overflow: hidden;
+        }
+
+        .youtube-thumbnail::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0);
+            transition: background 0.2s ease;
+        }
+
+        .youtube-card:hover .youtube-thumbnail::before {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .youtube-card:hover .youtube-thumbnail::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 48px;
+            height: 48px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 50%;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M8 5v14l11-7z'/%3E%3C/svg%3E");
+            background-size: 24px;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .youtube-duration {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+            z-index: 1;
+        }
+
+        .video-quality-badge {
+            position: absolute;
+            bottom: 8px;
+            right: 45px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+        }
+
+        .watch-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: #ff0000;
+            z-index: 2;
+        }
+
+        .youtube-content {
+            padding: 12px 0;
+            display: flex;
+            gap: 12px;
+        }
+
+        .channel-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            flex-shrink: 0;
+        }
+
+        .youtube-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .youtube-title {
+            font-size: 16px;
+            font-weight: 500;
+            line-height: 1.4;
+            margin-bottom: 4px;
+            color: #0f0f0f;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .youtube-meta {
+            font-size: 14px;
+            color: #606060;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .channel-name {
+            margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .verified-badge {
+            display: inline-flex;
+            width: 14px;
+            height: 14px;
+            margin-left: 4px;
+            vertical-align: middle;
+            color: #606060;
+            position: relative;
+        }
+
+        .verified-badge::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 11px;
+            background: #606060;
+            color: white;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .verified-badge:hover::before {
+            content: 'Verified';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            margin-bottom: 4px;
+        }
+
+        .video-stats {
+            display: flex;
+            align-items: center;
+            color: #606060;
+            font-size: 14px;
+        }
+
+        .video-stats span:not(:last-child)::after {
+            content: '•';
+            margin: 0 4px;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .share-target {
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .youtube-card:hover .share-target {
+            opacity: 1;
+        }
+
+        /* GitHub Styles */
+        .github-card {
+            padding: 20px;
+        }
+
+        .github-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .github-icon {
+            color: #24292e;
+        }
+
+        .repo-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #0366d6;
+        }
+
+        .repo-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .repo-stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .repo-description {
+            color: #24292e;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        /* X (Twitter) Styles */
+        .twitter-card {
+            padding: 20px;
+        }
+
+        .tweet-header {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .tweet-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: url('https://picsum.photos/48/48') center/cover;
+        }
+
+        .tweet-user {
+            flex: 1;
+        }
+
+        .tweet-name {
+            font-weight: 700;
+        }
+
+        .tweet-handle {
+            color: #536471;
+        }
+
+        .tweet-content {
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .tweet-image {
+            width: 100%;
+            height: 300px;
+            border-radius: 12px;
+            background: url('https://picsum.photos/600/300') center/cover;
+            margin-bottom: 15px;
+        }
+
+        .tweet-stats {
+            display: flex;
+            gap: 20px;
+            color: #536471;
+            font-size: 14px;
+        }
+
+        .share-target {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .share-target:hover {
+            background: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .share-target svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .floating-heart {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            background-color: #ff4d7c;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            opacity: 0.05;  /* Very transparent when inactive */
+            backdrop-filter: blur(2px);
+        }
+
+        .floating-heart svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+            transition: all 0.3s ease;
+        }
+
+        .floating-heart.active {
+            background-color: #ff1f5a;
+            animation: throb 1.2s ease-in-out infinite;
+            opacity: 1;  /* Fully opaque when active */
+        }
+
+        /* Update the throb animation to include opacity pulse */
+        @keyframes throb {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 2px 5px rgba(255, 31, 90, 0.2);
+                opacity: 0.95;
+            }
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 4px 15px rgba(255, 31, 90, 0.4);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 2px 5px rgba(255, 31, 90, 0.2);
+                opacity: 0.95;
+            }
+        }
+
+        /* Update hover states */
+        .floating-heart:hover {
+            transform: scale(1.15);
+            opacity: 0.3;  /* More visible on hover even when inactive */
+        }
+
+        .floating-heart.active:hover {
+            animation: none;
+            transform: scale(1.15);
+            background-color: #ff0044;
+            opacity: 1;  /* Always fully opaque when active and hovered */
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: white;
+            color: #333;
+            padding: 15px 25px;
+            border-radius: 12px;
+            display: none;  /* Hidden by default */
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            align-items: center;
+            gap: 15px;
+            min-width: 300px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .toast.show {
+            display: flex;
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translate(-50%, 100%);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+        }
+
+        .toast-message {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toast-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 10px;
+        }
+
+        .toast-button {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+        }
+
+        .lock-button {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        .lock-button:hover {
+            background-color: #27ae60;
+            transform: translateY(-1px);
+        }
+
+        .tip-button {
+            background-color: #f1c40f;
+            color: white;
+        }
+
+        .tip-button:hover {
+            background-color: #f39c12;
+            transform: translateY(-1px);
+        }
+
+        .platform-links {
+            margin-top: 10px;
+            color: #666;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            overflow: hidden;
+        }
+
+        .modal.show-modal {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            width: 300px;
+            position: relative;
+            max-height: 90vh;
+            overflow: hidden;
+        }
+
+        .custom-amount-container {
+            margin: 20px 0;
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .custom-amount-label {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+
+        .custom-amount-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #2ecc71;
+            text-align: center;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .custom-amount-input:focus {
+            border-color: #2ecc71;
+            box-shadow: 0 0 0 2px rgba(46, 204, 113, 0.2);
+        }
+
+        .custom-amount-input::placeholder {
+            color: #bdc3c7;
+        }
+
+        /* Add dollar sign before input */
+        .custom-amount-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .dollar-sign {
+            position: absolute;
+            left: 15px;
+            font-size: 18px;
+            color: #2ecc71;
+            font-weight: 600;
+        }
+
+        .custom-amount-input {
+            padding-left: 30px;
+        }
+
+        .or-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 20px 0;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .or-divider::before,
+        .or-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #eee;
+        }
+
+        .or-divider::before {
+            margin-right: 10px;
+        }
+
+        .or-divider::after {
+            margin-left: 10px;
+        }
+
+        .amount-carousel {
+            position: relative;
+            height: 180px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            cursor: pointer;
+            touch-action: none;
+        }
+
+        .carousel-container {
+            position: relative;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.15s ease-out;
+        }
+
+        .amount-item {
+            position: absolute;
+            width: 100%;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 28px;
+            font-weight: 600;
+            color: #2ecc71;
+            opacity: 0.3;
+            transform: translateY(0) scale(0.7);
+            transition: all 0.15s ease-out;
+            user-select: none;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            padding: 0 20px;
+            white-space: nowrap;
+        }
+
+        .amount-item:hover {
+            opacity: 0.8;
+        }
+
+        .amount-item.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            font-size: 42px;
+            z-index: 2;
+            color: #27ae60;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .amount-item.active:hover {
+            opacity: 1;
+        }
+
+        .amount-item.above-1, .amount-item.below-1 {
+            transform: translateY(-60px) scale(0.8);
+            opacity: 0.6;
+            z-index: 1;
+            cursor: pointer;
+        }
+
+        .amount-item.above-2, .amount-item.below-2 {
+            transform: translateY(-120px) scale(0.7);
+            opacity: 0.3;
+            cursor: pointer;
+        }
+
+        .amount-item.above-1 {
+            transform: translateY(-60px) scale(0.8);
+        }
+
+        .amount-item.above-2 {
+            transform: translateY(-120px) scale(0.7);
+        }
+
+        .amount-item.below-1 {
+            transform: translateY(60px) scale(0.8);
+        }
+
+        .amount-item.below-2 {
+            transform: translateY(120px) scale(0.7);
+        }
+
+        .carousel-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 100px;  /* Increased touch target */
+            background: linear-gradient(to right, rgba(248, 249, 250, 0.9), rgba(248, 249, 250, 0));
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+            transition: all 0.2s;
+        }
+
+        .carousel-arrow.prev {
+            left: 0;
+            background: linear-gradient(to right, rgba(248, 249, 250, 0.9), rgba(248, 249, 250, 0));
+        }
+
+        .carousel-arrow.next {
+            right: 0;
+            background: linear-gradient(to left, rgba(248, 249, 250, 0.9), rgba(248, 249, 250, 0));
+        }
+
+        .amount-carousel::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            height: 60px;
+            transform: translateY(-50%);
+            background: rgba(46, 204, 113, 0.1);
+            border-radius: 8px;
+            pointer-events: none;
+        }
+
+        .carousel-arrow svg {
+            width: 20px;
+            height: 20px;
+            fill: #495057;
+        }
+
+        .amount-label {
+            text-align: center;
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+        }
+
+        /* Remove old preset amounts styles */
+        .preset-amounts {
+            display: none;
+        }
+
+        .modal-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 25px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-button.confirm {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .modal-button.confirm:hover {
+            background: #27ae60;
+        }
+
+        .modal-button.cancel {
+            background: #f1f3f5;
+            color: #495057;
+        }
+
+        .modal-button.cancel:hover {
+            background: #e9ecef;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #adb5bd;
+        }
+
+        .close-modal:hover {
+            color: #495057;
+        }
+
+        /* Additional Content Styles */
+        .youtube-shorts {
+            height: 650px;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .shorts-video {
+            flex: 1;
+            background: url('https://picsum.photos/400/650') center/cover;
+            position: relative;
+        }
+
+        .shorts-actions {
+            position: absolute;
+            right: 10px;
+            bottom: 80px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .shorts-stat {
+            color: white;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .youtube-playlist {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+        }
+
+        .playlist-thumbnail {
+            width: 120px;
+            height: 180px;
+            background: url('https://picsum.photos/120/180') center/cover;
+            border-radius: 8px;
+        }
+
+        .github-issues {
+            padding: 15px;
+        }
+
+        .issue-item {
+            display: flex;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .issue-status {
+            color: #1a7f37;
+            font-size: 14px;
+        }
+
+        .issue-title {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .tweet-poll {
+            background: #f7f9f9;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .poll-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 8px 0;
+        }
+
+        .poll-bar {
+            flex: 1;
+            height: 24px;
+            background: #1d9bf0;
+            border-radius: 12px;
+            opacity: 0.3;
+        }
+
+        .poll-percentage {
+            min-width: 45px;
+        }
+
+        /* Add styles for shareable links */
+        .shareable-link {
+            position: relative;
+            color: #1a0dab;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .shareable-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Add styles for the static URL heart */
+        .url-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            z-index: 1001;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        }
+
+        .url-container {
+            flex: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 20px;
+            padding: 5px 10px;
+            gap: 8px;
+        }
+
+        .url-icon {
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+        }
+
+        .url-text {
+            flex: 1;
+            color: #495057;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            user-select: none;
+        }
+
+        .static-heart {
+            width: 32px;
+            height: 32px;
+            background-color: #ff4d7c;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+            margin-left: 8px;
+            opacity: 0.9;
+        }
+
+        .static-heart:hover {
+            transform: scale(1.1);
+            background-color: #ff1f5a;
+            opacity: 1;
+        }
+
+        .static-heart svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        /* Platform Section Styles */
+        .platform-section {
+            margin: 40px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .section-header svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        /* GitHub Additional Styles */
+        .repo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .repo-card {
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 16px;
+            transition: transform 0.2s;
+        }
+
+        .repo-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .repo-languages {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .language-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .commit-timeline {
+            height: 100px;
+            background: #f6f8fa;
+            border-radius: 6px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* X (Twitter) Additional Styles */
+        .tweet-thread {
+            position: relative;
+            margin-left: 30px;
+        }
+
+        .thread-line {
+            position: absolute;
+            left: 24px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #cfd9de;
+        }
+
+        .tweet-quote {
+            margin: 10px 0;
+            border: 1px solid #cfd9de;
+            border-radius: 12px;
+            padding: 12px;
+        }
+
+        .tweet-media-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2px;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .tweet-media {
+            padding-top: 56.25%;
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Playlist Styles */
+        .playlist-section {
+            margin-top: 40px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .playlist-header {
+            display: flex;
+            gap: 16px;
+            padding: 16px;
+            background: #f9f9f9;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .playlist-thumbnail {
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .playlist-thumbnail::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .playlist-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .playlist-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: #0f0f0f;
+            margin-bottom: 8px;
+        }
+
+        .playlist-meta {
+            font-size: 14px;
+            color: #606060;
+            margin-bottom: 12px;
+        }
+
+        .playlist-videos {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            padding: 16px;
+        }
+
+        .video-card {
+            cursor: pointer;
+            position: relative;
+        }
+
+        .video-thumbnail {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%;
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .video-thumbnail::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0);
+            transition: background 0.2s ease;
+            border-radius: 8px;
+        }
+
+        .video-card:hover .video-thumbnail::before {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .video-duration {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* Add tutorial styles */
+        .tutorial-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .tutorial-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .tutorial-step {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tutorial-step.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tutorial-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1a1a1a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tutorial-description {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #4a4a4a;
+            margin-bottom: 25px;
+        }
+
+        .tutorial-image {
+            width: 100%;
+            height: 200px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tutorial-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+        }
+
+        .tutorial-dots {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .tutorial-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ddd;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tutorial-dot.active {
+            background: #065fd4;
+            transform: scale(1.2);
+        }
+
+        .tutorial-button {
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .tutorial-button.next {
+            background: #065fd4;
+            color: white;
+        }
+
+        .tutorial-button.prev {
+            background: #f5f5f5;
+            color: #4a4a4a;
+        }
+
+        .tutorial-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .tutorial-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .tutorial-skip {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 5px 10px;
+        }
+
+        .tutorial-skip:hover {
+            color: #333;
+        }
+
+        .demo-heart {
+            width: 40px;
+            height: 40px;
+            background: #ff4d7c;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            transition: all 0.3s ease;
+        }
+
+        .demo-heart svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        .demo-cursor {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #333;
+            border-radius: 50%;
+            position: absolute;
+            transition: all 0.3s ease;
+        }
+
+        .demo-target {
+            padding: 8px 16px;
+            background: white;
+            border-radius: 20px;
+            position: absolute;
+            border: 1px solid #ddd;
+        }
+
+        /* Add styles for the new checkbox and message preview */
+        .auto-message-option {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .checkbox-container input {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+        }
+
+        .message-preview {
+            margin-top: 8px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #666;
+            font-style: italic;
+        }
+
+        /* Update styles for the message field */
+        .auto-message-option {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .checkbox-container input {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+        }
+
+        .message-field {
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .message-input {
+            width: 100%;
+            min-height: 60px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            line-height: 1.4;
+            resize: vertical;
+            font-family: inherit;
+            color: #333;
+            transition: border-color 0.2s ease;
+        }
+
+        .message-input:focus {
+            border-color: #2ecc71;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(46, 204, 113, 0.1);
+        }
+
+        .message-input::placeholder {
+            color: #999;
+        }
+
+        @keyframes pulseButton {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 2px 5px rgba(6, 95, 212, 0.2);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 4px 10px rgba(6, 95, 212, 0.3);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 2px 5px rgba(6, 95, 212, 0.2);
+            }
+        }
+
+        .show-tutorial-btn {
+            background: #065fd4;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 20px;
+            border: none;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            animation: pulseButton 2s infinite;
+        }
+
+        .show-tutorial-btn:hover {
+            animation: none;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(6, 95, 212, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <!-- Add URL bar with static heart -->
+    <div class="url-bar">
+        <div class="url-container">
+            <div class="url-icon">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+            </div>
+            <div class="url-text" id="current-url"></div>
+            <div class="static-heart" title="Share page URL">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="header">
+        <h1>LikeMe Demo</h1>
+        <p>This demo page simulates browsing on YT, GitHub, or X. Move near any share button and the heart will snap to it. Click the heart to share!</p>
+    </div>
+
+    <!-- YouTube Section -->
+    <div class="platform-section">
+        <div class="section-header">
+            <svg viewBox="0 0 24 24" fill="red">
+                <path d="M23.5 6.2c-.3-1-1-1.8-2-2.1C19.9 3.6 12 3.6 12 3.6s-7.9 0-9.5.5c-1 .3-1.7 1.1-2 2.1C0 7.9 0 12 0 12s0 4.1.5 5.8c.3 1 1 1.8 2 2.1 1.6.5 9.5.5 9.5.5s7.9 0 9.5-.5c1-.3 1.7-1.1 2-2.1.5-1.7.5-5.8.5-5.8s0-4.1-.5-5.8z"/>
+                <path fill="white" d="M9.6 15.6V8.4l6.4 3.6z"/>
+            </svg>
+            <h2 class="section-title">YouTube Content</h2>
+        </div>
+
+        <!-- Featured Video -->
+        <div class="youtube-card">
+            <div class="youtube-thumbnail" style="background-image: url('https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg')">
+                <div class="watch-progress" style="width: 35%"></div>
+                <div class="youtube-duration">15:42</div>
+                <div class="video-quality-badge">4K</div>
+                <div class="share-target" data-url="https://youtube.com/watch?v=dQw4w9WgXcQ">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                        <polyline points="16 6 12 2 8 6"/>
+                        <line x1="12" y1="2" x2="12" y2="15"/>
+                    </svg>
+                    Share
+                </div>
+            </div>
+            <div class="youtube-content">
+                <div class="channel-avatar" style="background-image: url('https://yt3.googleusercontent.com/ytc/APkrFKaqca-xQxBsV_f4gT3zL5hXYEP-MysF1kHGhe7l=s176-c-k-c0x00ffffff-no-rj')"></div>
+                <div class="youtube-info">
+                    <div class="youtube-title">Web3 Social Platforms in 2024: The Complete Developer's Guide</div>
+                    <div class="youtube-meta">
+                        <div class="channel-name">Web3 Academy <span class="verified-badge"></span></div>
+                        <div class="video-stats">
+                            <span>542K views</span>
+                            <span>1 week ago</span>
+                            <span>CC</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Video Grid -->
+        <div class="video-grid">
+            <!-- Video 1 -->
+            <div class="youtube-card">
+                <div class="youtube-thumbnail" style="background-image: url('https://i.ytimg.com/vi/Yf5d_Zx3AaI/maxresdefault.jpg')">
+                    <div class="watch-progress" style="width: 75%"></div>
+                    <div class="youtube-duration">8:24</div>
+                    <div class="video-quality-badge">HD</div>
+                    <div class="share-target" data-url="https://youtube.com/watch?v=Yf5d_Zx3AaI">Share</div>
+                </div>
+                <div class="youtube-content">
+                    <div class="channel-avatar" style="background-image: url('https://yt3.googleusercontent.com/ytc/APkrFKZGyiFJtoR2Isio_VvZqj6-zq4jF3tMYlZTqVOb=s176-c-k-c0x00ffffff-no-rj')"></div>
+                    <div class="youtube-info">
+                        <div class="youtube-title">10 Smart Contract Security Tips You Need to Know</div>
+                        <div class="youtube-meta">
+                            <div class="channel-name">Blockchain Basics</div>
+                            <div class="video-stats">
+                                <span>128K views</span>
+                                <span>3 days ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video 2 -->
+            <div class="youtube-card">
+                <div class="youtube-thumbnail" style="background-image: url('https://i.ytimg.com/vi/cZZMDOrIo2k/maxresdefault.jpg')">
+                    <div class="watch-progress" style="width: 15%"></div>
+                    <div class="youtube-duration">12:15</div>
+                    <div class="video-quality-badge">4K</div>
+                    <div class="share-target" data-url="https://youtube.com/watch?v=cZZMDOrIo2k">Share</div>
+                </div>
+                <div class="youtube-content">
+                    <div class="channel-avatar" style="background-image: url('https://yt3.googleusercontent.com/ytc/APkrFKaHM7EE3m9RcEsd6y2T3nXD3UXzqJ-J5MjRKA=s176-c-k-c0x00ffffff-no-rj')"></div>
+                    <div class="youtube-info">
+                        <div class="youtube-title">Building an NFT Marketplace from Scratch (2024 Tutorial)</div>
+                        <div class="youtube-meta">
+                            <div class="channel-name">CryptoDevHub <span class="verified-badge"></span></div>
+                            <div class="video-stats">
+                                <span>95K views</span>
+                                <span>5 days ago</span>
+                                <span>CC</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video 3 -->
+            <div class="youtube-card">
+                <div class="youtube-thumbnail" style="background-image: url('https://i.ytimg.com/vi/vhWXmsJg_Pk/maxresdefault.jpg')">
+                    <div class="youtube-duration">18:45</div>
+                    <div class="video-quality-badge">HD</div>
+                    <div class="share-target" data-url="https://youtube.com/watch?v=vhWXmsJg_Pk">Share</div>
+                </div>
+                <div class="youtube-content">
+                    <div class="channel-avatar" style="background-image: url('https://yt3.googleusercontent.com/ytc/APkrFKZWeMCsx4Q9e_Hm6jZg_snl3kTyP-cGwEv9DzOp=s176-c-k-c0x00ffffff-no-rj')"></div>
+                    <div class="youtube-info">
+                        <div class="youtube-title">Web3 Authentication: Deep Dive into Sign-In with Ethereum</div>
+                        <div class="youtube-meta">
+                            <div class="channel-name">ETH Dev</div>
+                            <div class="video-stats">
+                                <span>76K views</span>
+                                <span>1 week ago</span>
+                                <span>NEW</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video 4 -->
+            <div class="youtube-card">
+                <div class="youtube-thumbnail" style="background-image: url('https://i.ytimg.com/vi/9PWm8YhTp_Y/maxresdefault.jpg')">
+                    <div class="watch-progress" style="width: 45%"></div>
+                    <div class="youtube-duration">22:30</div>
+                    <div class="video-quality-badge">4K</div>
+                    <div class="share-target" data-url="https://youtube.com/watch?v=9PWm8YhTp_Y">Share</div>
+                </div>
+                <div class="youtube-content">
+                    <div class="channel-avatar" style="background-image: url('https://yt3.googleusercontent.com/ytc/APkrFKbYJxXvvkZY8E9eXtPz8HqyZRUYPgfk9FsB1kFz=s176-c-k-c0x00ffffff-no-rj')"></div>
+                    <div class="youtube-info">
+                        <div class="youtube-title">DeFi Protocol Development: Best Practices & Common Pitfalls</div>
+                        <div class="youtube-meta">
+                            <div class="channel-name">DeFi Builder <span class="verified-badge"></span></div>
+                            <div class="video-stats">
+                                <span>124K views</span>
+                                <span>2 weeks ago</span>
+                                <span>CC</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video 5 -->
+            <div class="youtube-card">
+                <div class="youtube-thumbnail" style="background-image: url('https://i.ytimg.com/vi/7pWxCklcNsU/maxresdefault.jpg')">
+                    <div class="watch-progress" style="width: 90%"></div>
+                    <div class="youtube-duration">15:20</div>
+                    <div class="video-quality-badge">HD</div>
+                    <div class="share-target" data-url="https://youtube.com/watch?v=7pWxCklcNsU">Share</div>
+                </div>
+                <div class="youtube-content">
+                    <div class="channel-avatar" style="background-image: url('https://yt3.googleusercontent.com/ytc/APkrFKYmUAZYgbj4_7hkiGd9p5v8_9q4GyUL9hCvXt75=s176-c-k-c0x00ffffff-no-rj')"></div>
+                    <div class="youtube-info">
+                        <div class="youtube-title">Zero-Knowledge Proofs Explained Simply (With Code Examples)</div>
+                        <div class="youtube-meta">
+                            <div class="channel-name">Crypto Academy <span class="verified-badge"></span></div>
+                            <div class="video-stats">
+                                <span>203K views</span>
+                                <span>3 weeks ago</span>
+                                <span>CC</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video 6 -->
+            <div class="youtube-card">
+                <div class="youtube-thumbnail" style="background-image: url('https://i.ytimg.com/vi/2qcvxRqXQ3Y/maxresdefault.jpg')">
+                    <div class="youtube-duration">10:15</div>
+                    <div class="video-quality-badge">HD</div>
+                    <div class="share-target" data-url="https://youtube.com/watch?v=2qcvxRqXQ3Y">Share</div>
+                </div>
+                <div class="youtube-content">
+                    <div class="channel-avatar" style="background-image: url('https://yt3.googleusercontent.com/ytc/APkrFKZ4yZXkWgXBCZVo2S_03nw_ZJsjFYoWAFh-FPkH=s176-c-k-c0x00ffffff-no-rj')"></div>
+                    <div class="youtube-info">
+                        <div class="youtube-title">5 Critical Solidity Security Vulnerabilities to Avoid</div>
+                        <div class="youtube-meta">
+                            <div class="channel-name">Smart Contract Security</div>
+                            <div class="video-stats">
+                                <span>167K views</span>
+                                <span>1 month ago</span>
+                                <span>NEW</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shorts Section -->
+        <h3 style="margin: 30px 0 20px; font-size: 20px; color: #0f0f0f;">Popular Shorts</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px;">
+            <!-- Short 1 -->
+            <div class="youtube-shorts" style="height: 250px; background: white; border-radius: 12px; overflow: hidden; position: relative;">
+                <div class="shorts-video" style="height: 200px; background-image: url('https://picsum.photos/300/600'); position: relative;">
+                    <div class="share-target" data-url="https://youtube.com/shorts/short1">Share</div>
+                    <div style="position: absolute; bottom: 8px; left: 8px; right: 8px; display: flex; justify-content: space-between; align-items: center;">
+                        <div style="color: white; font-size: 14px; font-weight: 500; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">0:58</div>
+                        <div style="background: #ff0000; color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-weight: 500;">SHORTS</div>
+                    </div>
+                </div>
+                <div style="padding: 8px;">
+                    <div style="font-weight: 500; font-size: 14px; line-height: 1.3; color: #0f0f0f; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">5 Web3 Tips in 60 Seconds</div>
+                    <div style="font-size: 12px; color: #606060; margin-top: 4px;">45K views</div>
+                </div>
+            </div>
+
+            <!-- Short 2 -->
+            <div class="youtube-shorts" style="height: 250px; background: white; border-radius: 12px; overflow: hidden; position: relative;">
+                <div class="shorts-video" style="height: 200px; background-image: url('https://picsum.photos/301/600'); position: relative;">
+                    <div class="share-target" data-url="https://youtube.com/shorts/short2">Share</div>
+                    <div style="position: absolute; bottom: 8px; left: 8px; right: 8px; display: flex; justify-content: space-between; align-items: center;">
+                        <div style="color: white; font-size: 14px; font-weight: 500; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">0:45</div>
+                        <div style="background: #ff0000; color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-weight: 500;">SHORTS</div>
+                    </div>
+                </div>
+                <div style="padding: 8px;">
+                    <div style="font-weight: 500; font-size: 14px; line-height: 1.3; color: #0f0f0f; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Quick Smart Contract Demo</div>
+                    <div style="font-size: 12px; color: #606060; margin-top: 4px;">32K views</div>
+                </div>
+            </div>
+
+            <!-- Short 3 -->
+            <div class="youtube-shorts" style="height: 250px; background: white; border-radius: 12px; overflow: hidden; position: relative;">
+                <div class="shorts-video" style="height: 200px; background-image: url('https://picsum.photos/302/600'); position: relative;">
+                    <div class="share-target" data-url="https://youtube.com/shorts/short3">Share</div>
+                    <div style="position: absolute; bottom: 8px; left: 8px; right: 8px; display: flex; justify-content: space-between; align-items: center;">
+                        <div style="color: white; font-size: 14px; font-weight: 500; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">1:00</div>
+                        <div style="background: #ff0000; color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-weight: 500;">SHORTS</div>
+                    </div>
+                </div>
+                <div style="padding: 8px;">
+                    <div style="font-weight: 500; font-size: 14px; line-height: 1.3; color: #0f0f0f; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Web3 Wallet Setup Guide</div>
+                    <div style="font-size: 12px; color: #606060; margin-top: 4px;">28K views</div>
+                </div>
+            </div>
+
+            <!-- Short 4 -->
+            <div class="youtube-shorts" style="height: 250px; background: white; border-radius: 12px; overflow: hidden; position: relative;">
+                <div class="shorts-video" style="height: 200px; background-image: url('https://picsum.photos/303/600'); position: relative;">
+                    <div class="share-target" data-url="https://youtube.com/shorts/short4">Share</div>
+                    <div style="position: absolute; bottom: 8px; left: 8px; right: 8px; display: flex; justify-content: space-between; align-items: center;">
+                        <div style="color: white; font-size: 14px; font-weight: 500; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">0:52</div>
+                        <div style="background: #ff0000; color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-weight: 500;">SHORTS</div>
+                    </div>
+                </div>
+                <div style="padding: 8px;">
+                    <div style="font-weight: 500; font-size: 14px; line-height: 1.3; color: #0f0f0f; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">NFT Minting in 60s</div>
+                    <div style="font-size: 12px; color: #606060; margin-top: 4px;">52K views</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Playlist Section -->
+        <div class="playlist-section">
+            <div class="playlist-header">
+                <div class="playlist-thumbnail" style="background-image: url('https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg')">
+                    <div class="share-target" data-url="https://youtube.com/playlist?list=web3essentials">Share</div>
+                </div>
+                <div class="playlist-info">
+                    <div class="playlist-title">Web3 Development Essentials</div>
+                    <div class="playlist-meta">45 videos • Updated 2 days ago</div>
+                    <div style="display: flex; gap: 8px; margin-top: 12px;">
+                        <button style="background: #065fd4; color: white; border: none; padding: 8px 16px; border-radius: 18px; font-size: 14px; font-weight: 500; cursor: pointer;">Play all</button>
+                        <button style="background: #f2f2f2; color: #0f0f0f; border: none; padding: 8px 16px; border-radius: 18px; font-size: 14px; font-weight: 500; cursor: pointer;">Save</button>
+                    </div>
+                </div>
+            </div>
+            <div class="playlist-videos">
+                <!-- Video 1 -->
+                <div class="video-card">
+                    <div class="video-thumbnail" style="background-image: url('https://i.ytimg.com/vi/abc123/maxresdefault.jpg')">
+                        <div class="video-duration">14:22</div>
+                        <div class="watch-progress" style="width: 100%"></div>
+                    </div>
+                    <div style="font-size: 14px; font-weight: 500; color: #0f0f0f; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">1. Introduction to Web3</div>
+                </div>
+                <!-- Video 2 -->
+                <div class="video-card">
+                    <div class="video-thumbnail" style="background-image: url('https://i.ytimg.com/vi/def456/maxresdefault.jpg')">
+                        <div class="video-duration">18:15</div>
+                        <div class="watch-progress" style="width: 75%"></div>
+                    </div>
+                    <div style="font-size: 14px; font-weight: 500; color: #0f0f0f; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">2. Setting Up Your Development Environment</div>
+                </div>
+                <!-- Video 3 -->
+                <div class="video-card">
+                    <div class="video-thumbnail" style="background-image: url('https://i.ytimg.com/vi/ghi789/maxresdefault.jpg')">
+                        <div class="video-duration">21:30</div>
+                        <div class="watch-progress" style="width: 45%"></div>
+                    </div>
+                    <div style="font-size: 14px; font-weight: 500; color: #0f0f0f; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">3. Smart Contract Basics</div>
+                </div>
+                <!-- Video 4 -->
+                <div class="video-card">
+                    <div class="video-thumbnail" style="background-image: url('https://i.ytimg.com/vi/jkl012/maxresdefault.jpg')">
+                        <div class="video-duration">16:45</div>
+                    </div>
+                    <div style="font-size: 14px; font-weight: 500; color: #0f0f0f; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">4. Web3.js Tutorial</div>
+                </div>
+                <!-- Video 5 -->
+                <div class="video-card">
+                    <div class="video-thumbnail" style="background-image: url('https://i.ytimg.com/vi/mno345/maxresdefault.jpg')">
+                        <div class="video-duration">19:50</div>
+                    </div>
+                    <div style="font-size: 14px; font-weight: 500; color: #0f0f0f; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">5. Building Your First dApp</div>
+                </div>
+                <!-- Video 6 -->
+                <div class="video-card">
+                    <div class="video-thumbnail" style="background-image: url('https://i.ytimg.com/vi/pqr678/maxresdefault.jpg')">
+                        <div class="video-duration">23:10</div>
+                    </div>
+                    <div style="font-size: 14px; font-weight: 500; color: #0f0f0f; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">6. Testing Smart Contracts</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Second Page Content -->
+        <h3 style="margin: 30px 0 20px">More Videos</h3>
+        <div class="video-grid">
+            <!-- Video 7 -->
+            <div class="video-card">
+                <div class="video-thumbnail" style="background-image: url('https://picsum.photos/406/225')">
+                    <div class="video-duration">25:40</div>
+                    <div class="share-target" data-url="https://youtube.com/watch?v=video7">Share</div>
+                </div>
+                <div class="youtube-content">
+                    <div class="youtube-title">Advanced Solidity Patterns</div>
+                    <div class="youtube-meta">
+                        <div>89K views</div>
+                        <div>1 month ago</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video 8 -->
+            <div class="video-card">
+                <div class="video-thumbnail" style="background-image: url('https://picsum.photos/407/225')">
+                    <div class="video-duration">19:15</div>
+                    <div class="share-target" data-url="https://youtube.com/watch?v=video8">Share</div>
+                </div>
+                <div class="youtube-content">
+                    <div class="youtube-title">Web3 Social Graph Implementation</div>
+                    <div class="youtube-meta">
+                        <div>65K views</div>
+                        <div>1 month ago</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video 9 -->
+            <div class="video-card">
+                <div class="video-thumbnail" style="background-image: url('https://picsum.photos/408/225')">
+                    <div class="video-duration">28:30</div>
+                    <div class="share-target" data-url="https://youtube.com/watch?v=video9">Share</div>
+                </div>
+                <div class="youtube-content">
+                    <div class="youtube-title">Building a DAO: Step by Step</div>
+                    <div class="youtube-meta">
+                        <div>112K views</div>
+                        <div>2 months ago</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video 10 -->
+            <div class="video-card">
+                <div class="video-thumbnail" style="background-image: url('https://picsum.photos/409/225')">
+                    <div class="video-duration">16:20</div>
+                    <div class="share-target" data-url="https://youtube.com/watch?v=video10">Share</div>
+                </div>
+                <div class="youtube-content">
+                    <div class="youtube-title">Token Gating Implementation</div>
+                    <div class="youtube-meta">
+                        <div>78K views</div>
+                        <div>2 months ago</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video 11 -->
+            <div class="video-card">
+                <div class="video-thumbnail" style="background-image: url('https://picsum.photos/410/225')">
+                    <div class="video-duration">22:45</div>
+                    <div class="share-target" data-url="https://youtube.com/watch?v=video11">Share</div>
+                </div>
+                <div class="youtube-content">
+                    <div class="youtube-title">Web3 Security Best Practices</div>
+                    <div class="youtube-meta">
+                        <div>156K views</div>
+                        <div>2 months ago</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video 12 -->
+            <div class="video-card">
+                <div class="video-thumbnail" style="background-image: url('https://picsum.photos/411/225')">
+                    <div class="video-duration">20:10</div>
+                    <div class="share-target" data-url="https://youtube.com/watch?v=video12">Share</div>
+                </div>
+                <div class="youtube-content">
+                    <div class="youtube-title">Decentralized Storage Solutions</div>
+                    <div class="youtube-meta">
+                        <div>92K views</div>
+                        <div>2 months ago</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GitHub Section -->
+    <div class="platform-section">
+        <div class="section-header">
+            <svg viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
+            <h2 class="section-title">GitHub Projects</h2>
+        </div>
+
+        <!-- Repository Grid -->
+        <div class="repo-grid">
+            <!-- Repository 1 -->
+            <div class="repo-card">
+                <div class="github-header">
+                    <span class="repo-name">web3-social-platform</span>
+                    <div class="share-target" data-url="https://github.com/username/web3-social-platform">Share</div>
+                </div>
+                <div class="repo-description">
+                    A decentralized social platform with built-in token gating and NFT support.
+                </div>
+                <div class="repo-meta">
+                    <div class="repo-stat">⭐ 2.4k</div>
+                    <div class="repo-stat">🔄 456</div>
+                    <div class="repo-stat">👁️ 89</div>
+                </div>
+                <div class="repo-languages">
+                    <span class="language-dot" style="background: #f1e05a"></span> JavaScript
+                    <span class="language-dot" style="background: #3178c6"></span> TypeScript
+                    <span class="language-dot" style="background: #c6538c"></span> Solidity
+                </div>
+            </div>
+
+            <!-- Repository 2 -->
+            <div class="repo-card">
+                <div class="github-header">
+                    <span class="repo-name">defi-starter-kit</span>
+                    <div class="share-target" data-url="https://github.com/username/defi-starter-kit">Share</div>
+                </div>
+                <div class="repo-description">
+                    Boilerplate for building DeFi applications with React and Hardhat.
+                </div>
+                <div class="repo-meta">
+                    <div class="repo-stat">⭐ 1.8k</div>
+                    <div class="repo-stat">🔄 312</div>
+                    <div class="repo-stat">👁️ 67</div>
+                </div>
+                <div class="repo-languages">
+                    <span class="language-dot" style="background: #61dafb"></span> React
+                    <span class="language-dot" style="background: #c6538c"></span> Solidity
+                </div>
+            </div>
+
+            <!-- Repository 3 -->
+            <div class="repo-card">
+                <div class="github-header">
+                    <span class="repo-name">nft-marketplace</span>
+                    <div class="share-target" data-url="https://github.com/username/nft-marketplace">Share</div>
+                </div>
+                <div class="repo-description">
+                    Full-stack NFT marketplace with ERC721 and ERC1155 support.
+                </div>
+                <div class="repo-meta">
+                    <div class="repo-stat">⭐ 3.1k</div>
+                    <div class="repo-stat">🔄 578</div>
+                    <div class="repo-stat">👁️ 124</div>
+                </div>
+                <div class="repo-languages">
+                    <span class="language-dot" style="background: #3178c6"></span> TypeScript
+                    <span class="language-dot" style="background: #c6538c"></span> Solidity
+                </div>
+            </div>
+
+            <!-- Repository 4 -->
+            <div class="repo-card">
+                <div class="github-header">
+                    <span class="repo-name">dao-framework</span>
+                    <div class="share-target" data-url="https://github.com/username/dao-framework">Share</div>
+                </div>
+                <div class="repo-description">
+                    Modular framework for building DAOs with customizable governance.
+                </div>
+                <div class="repo-meta">
+                    <div class="repo-stat">⭐ 1.5k</div>
+                    <div class="repo-stat">🔄 234</div>
+                    <div class="repo-stat">👁️ 56</div>
+                </div>
+                <div class="repo-languages">
+                    <span class="language-dot" style="background: #c6538c"></span> Solidity
+                    <span class="language-dot" style="background: #3178c6"></span> TypeScript
+                </div>
+            </div>
+        </div>
+
+        <!-- Issues Section -->
+        <h3 style="margin: 30px 0 20px">Active Issues</h3>
+        <div class="github-issues">
+            <!-- Issue 1 -->
+            <div class="issue-item">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="#1a7f37">
+                    <circle cx="8" cy="8" r="7" stroke="currentColor" fill="none"/>
+                    <circle cx="8" cy="8" r="2" fill="currentColor"/>
+                </svg>
+                <div>
+                    <div class="issue-title">
+                        <a class="shareable-link" data-url="https://github.com/username/web3-social-platform/issues/123">
+                            Implement token gating for private communities
+                        </a>
+                    </div>
+                    <div style="color: #666; font-size: 14px;">web3-social-platform #123 opened 2 days ago</div>
+                </div>
+            </div>
+
+            <!-- Issue 2 -->
+            <div class="issue-item">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="#d73a49">
+                    <circle cx="8" cy="8" r="7" stroke="currentColor" fill="none"/>
+                    <circle cx="8" cy="8" r="2" fill="currentColor"/>
+                </svg>
+                <div>
+                    <div class="issue-title">
+                        <a class="shareable-link" data-url="https://github.com/username/defi-starter-kit/issues/45">
+                            Fix gas estimation in swap function
+                        </a>
+                    </div>
+                    <div style="color: #666; font-size: 14px;">defi-starter-kit #45 opened 3 days ago</div>
+                </div>
+            </div>
+
+            <!-- Issue 3 -->
+            <div class="issue-item">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="#1a7f37">
+                    <circle cx="8" cy="8" r="7" stroke="currentColor" fill="none"/>
+                    <circle cx="8" cy="8" r="2" fill="currentColor"/>
+                </svg>
+                <div>
+                    <div class="issue-title">
+                        <a class="shareable-link" data-url="https://github.com/username/nft-marketplace/issues/89">
+                            Add support for lazy minting
+                        </a>
+                    </div>
+                    <div style="color: #666; font-size: 14px;">nft-marketplace #89 opened 5 days ago</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pull Requests Section -->
+        <h3 style="margin: 30px 0 20px">Recent Pull Requests</h3>
+        <div class="github-issues">
+            <!-- PR 1 -->
+            <div class="issue-item">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="#28a745">
+                    <path d="M7.177 3.073L9.573.677A.25.25 0 0110 .854v4.792a.25.25 0 01-.427.177L7.177 3.427a.25.25 0 010-.354zM3.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122v5.256a2.251 2.251 0 11-1.5 0V5.372A2.25 2.25 0 011.5 3.25zM11 2.5h-1V4h1a1 1 0 011 1v5.628a2.251 2.251 0 101.5 0V5A2.5 2.5 0 0011 2.5zm1 10.25a.75.75 0 111.5 0 .75.75 0 01-1.5 0zM3.75 12a.75.75 0 100 1.5.75.75 0 000-1.5z"/>
+                </svg>
+                <div>
+                    <div class="issue-title">
+                        <a class="shareable-link" data-url="https://github.com/username/web3-social-platform/pull/156">
+                            Add multi-sig wallet integration
+                        </a>
+                    </div>
+                    <div style="color: #666; font-size: 14px;">web3-social-platform #156 opened 1 day ago</div>
+                </div>
+            </div>
+
+            <!-- PR 2 -->
+            <div class="issue-item">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="#28a745">
+                    <path d="M7.177 3.073L9.573.677A.25.25 0 0110 .854v4.792a.25.25 0 01-.427.177L7.177 3.427a.25.25 0 010-.354zM3.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122v5.256a2.251 2.251 0 11-1.5 0V5.372A2.25 2.25 0 011.5 3.25zM11 2.5h-1V4h1a1 1 0 011 1v5.628a2.251 2.251 0 101.5 0V5A2.5 2.5 0 0011 2.5zm1 10.25a.75.75 0 111.5 0 .75.75 0 01-1.5 0zM3.75 12a.75.75 0 100 1.5.75.75 0 000-1.5z"/>
+                </svg>
+                <div>
+                    <div class="issue-title">
+                        <a class="shareable-link" data-url="https://github.com/username/dao-framework/pull/78">
+                            Implement quadratic voting
+                        </a>
+                    </div>
+                    <div style="color: #666; font-size: 14px;">dao-framework #78 opened 4 days ago</div>
+                </div>
+            </div>
+
+            <!-- PR 3 -->
+            <div class="issue-item">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="#28a745">
+                    <path d="M7.177 3.073L9.573.677A.25.25 0 0110 .854v4.792a.25.25 0 01-.427.177L7.177 3.427a.25.25 0 010-.354zM3.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122v5.256a2.251 2.251 0 11-1.5 0V5.372A2.25 2.25 0 011.5 3.25zM11 2.5h-1V4h1a1 1 0 011 1v5.628a2.251 2.251 0 101.5 0V5A2.5 2.5 0 0011 2.5zm1 10.25a.75.75 0 111.5 0 .75.75 0 01-1.5 0zM3.75 12a.75.75 0 100 1.5.75.75 0 000-1.5z"/>
+                </svg>
+                <div>
+                    <div class="issue-title">
+                        <a class="shareable-link" data-url="https://github.com/username/nft-marketplace/pull/92">
+                            Add support for ERC1155 batch transfers
+                        </a>
+                    </div>
+                    <div style="color: #666; font-size: 14px;">nft-marketplace #92 opened 6 days ago</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Second Page Content -->
+        <h3 style="margin: 30px 0 20px">More Repositories</h3>
+        <div class="repo-grid">
+            <!-- Repository 5 -->
+            <div class="repo-card">
+                <div class="github-header">
+                    <span class="repo-name">smart-contract-templates</span>
+                    <div class="share-target" data-url="https://github.com/username/smart-contract-templates">Share</div>
+                </div>
+                <div class="repo-description">
+                    Collection of audited smart contract templates for common use cases.
+                </div>
+                <div class="repo-meta">
+                    <div class="repo-stat">⭐ 987</div>
+                    <div class="repo-stat">🔄 145</div>
+                    <div class="repo-stat">👁️ 34</div>
+                </div>
+                <div class="repo-languages">
+                    <span class="language-dot" style="background: #c6538c"></span> Solidity
+                </div>
+            </div>
+
+            <!-- Repository 6 -->
+            <div class="repo-card">
+                <div class="github-header">
+                    <span class="repo-name">web3-auth</span>
+                    <div class="share-target" data-url="https://github.com/username/web3-auth">Share</div>
+                </div>
+                <div class="repo-description">
+                    Authentication library for Web3 applications with wallet integration.
+                </div>
+                <div class="repo-meta">
+                    <div class="repo-stat">⭐ 756</div>
+                    <div class="repo-stat">🔄 89</div>
+                    <div class="repo-stat">👁️ 23</div>
+                </div>
+                <div class="repo-languages">
+                    <span class="language-dot" style="background: #3178c6"></span> TypeScript
+                    <span class="language-dot" style="background: #f1e05a"></span> JavaScript
+                </div>
+            </div>
+
+            <!-- Repository 7 -->
+            <div class="repo-card">
+                <div class="github-header">
+                    <span class="repo-name">token-bridge</span>
+                    <div class="share-target" data-url="https://github.com/username/token-bridge">Share</div>
+                </div>
+                <div class="repo-description">
+                    Cross-chain token bridge implementation with security features.
+                </div>
+                <div class="repo-meta">
+                    <div class="repo-stat">⭐ 1.2k</div>
+                    <div class="repo-stat">🔄 167</div>
+                    <div class="repo-stat">👁️ 45</div>
+                </div>
+                <div class="repo-languages">
+                    <span class="language-dot" style="background: #c6538c"></span> Solidity
+                    <span class="language-dot" style="background: #3178c6"></span> TypeScript
+                </div>
+            </div>
+
+            <!-- Repository 8 -->
+            <div class="repo-card">
+                <div class="github-header">
+                    <span class="repo-name">defi-analytics</span>
+                    <div class="share-target" data-url="https://github.com/username/defi-analytics">Share</div>
+                </div>
+                <div class="repo-description">
+                    Analytics dashboard for DeFi protocols with real-time data.
+                </div>
+                <div class="repo-meta">
+                    <div class="repo-stat">⭐ 645</div>
+                    <div class="repo-stat">🔄 78</div>
+                    <div class="repo-stat">👁️ 28</div>
+                </div>
+                <div class="repo-languages">
+                    <span class="language-dot" style="background: #61dafb"></span> React
+                    <span class="language-dot" style="background: #3178c6"></span> TypeScript
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- X (Twitter) Section -->
+    <div class="platform-section">
+        <div class="section-header">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+            <h2 class="section-title">X (Twitter) Feed</h2>
+        </div>
+
+        <!-- Featured Thread -->
+        <div class="twitter-card">
+            <div class="tweet-header">
+                <div class="tweet-avatar"></div>
+                <div class="tweet-user">
+                    <div class="tweet-name">Web3 Insights</div>
+                    <div class="tweet-handle"><a class="shareable-link" data-url="https://x.com/web3insights">@web3insights</a></div>
+                </div>
+                <div class="share-target" data-url="https://x.com/web3insights/status/thread1">Share</div>
+            </div>
+            <div class="tweet-content">
+                <a class="shareable-link" data-url="https://x.com/web3insights/status/thread1">
+                    🧵 THREAD: The Future of Decentralized Social Media
+                    
+                    1/ We're seeing a massive shift in how people interact online. Web3 is enabling true ownership of digital content and new monetization models.
+                </a>
+            </div>
+            <div class="tweet-thread">
+                <div class="thread-line"></div>
+                <div class="tweet-content" style="margin: 15px 0;">
+                    <a class="shareable-link" data-url="https://x.com/web3insights/status/thread1/2">
+                        2/ Traditional social platforms take a significant cut of creator earnings. With Web3, creators can earn directly from their community through tokens and NFTs.
+                    </a>
+                </div>
+                <div class="tweet-content" style="margin: 15px 0;">
+                    <a class="shareable-link" data-url="https://x.com/web3insights/status/thread1/3">
+                        3/ Token gating allows creators to offer exclusive content and experiences to their most dedicated supporters.
+                    </a>
+                </div>
+                <div class="tweet-content" style="margin: 15px 0;">
+                    <a class="shareable-link" data-url="https://x.com/web3insights/status/thread1/4">
+                        4/ Community ownership through DAOs gives users a say in platform governance and feature development.
+                    </a>
+                </div>
+                <div class="tweet-content" style="margin: 15px 0;">
+                    <a class="shareable-link" data-url="https://x.com/web3insights/status/thread1/5">
+                        5/ Data portability means users can take their social graph and content across different platforms.
+                    </a>
+                </div>
+            </div>
+            <div class="tweet-stats">
+                <span>🔄 2.4K</span>
+                <span>❤️ 8.7K</span>
+                <span>👁️ 156K</span>
+            </div>
+        </div>
+
+        <!-- Regular Tweets -->
+        <div style="margin-top: 30px">
+            <!-- Tweet with Poll -->
+            <div class="twitter-card">
+                <div class="tweet-header">
+                    <div class="tweet-avatar"></div>
+                    <div class="tweet-user">
+                        <div class="tweet-name">DeFi Daily</div>
+                        <div class="tweet-handle"><a class="shareable-link" data-url="https://x.com/defidaily">@defidaily</a></div>
+                    </div>
+                    <div class="share-target" data-url="https://x.com/defidaily/status/poll1">Share</div>
+                </div>
+                <div class="tweet-content">
+                    <a class="shareable-link" data-url="https://x.com/defidaily/status/poll1">
+                        Which Web3 feature are you most excited about? 🤔
+                    </a>
+                </div>
+                <div class="tweet-poll">
+                    <div class="poll-option">
+                        <div class="poll-bar" style="width: 45%"></div>
+                        <span>Token Gating</span>
+                        <span class="poll-percentage">45%</span>
+                    </div>
+                    <div class="poll-option">
+                        <div class="poll-bar" style="width: 25%"></div>
+                        <span>NFT Integration</span>
+                        <span class="poll-percentage">25%</span>
+                    </div>
+                    <div class="poll-option">
+                        <div class="poll-bar" style="width: 20%"></div>
+                        <span>DAO Governance</span>
+                        <span class="poll-percentage">20%</span>
+                    </div>
+                    <div class="poll-option">
+                        <div class="poll-bar" style="width: 10%"></div>
+                        <span>Social Graph</span>
+                        <span class="poll-percentage">10%</span>
+                    </div>
+                </div>
+                <div class="tweet-stats">
+                    <span>🔄 856</span>
+                    <span>❤️ 2.1K</span>
+                    <span>👁️ 45K</span>
+                </div>
+            </div>
+
+            <!-- Tweet with Image -->
+            <div class="twitter-card">
+                <div class="tweet-header">
+                    <div class="tweet-avatar"></div>
+                    <div class="tweet-user">
+                        <div class="tweet-name">Crypto News</div>
+                        <div class="tweet-handle"><a class="shareable-link" data-url="https://x.com/cryptonews">@cryptonews</a></div>
+                    </div>
+                    <div class="share-target" data-url="https://x.com/cryptonews/status/image1">Share</div>
+                </div>
+                <div class="tweet-content">
+                    <a class="shareable-link" data-url="https://x.com/cryptonews/status/image1">
+                        Just launched our new Web3 social platform! Check out the beautiful UI and seamless wallet integration 🚀
+                    </a>
+                </div>
+                <div class="tweet-image"></div>
+                <div class="tweet-stats">
+                    <span>🔄 1.2K</span>
+                    <span>❤️ 3.4K</span>
+                    <span>👁️ 67K</span>
+                </div>
+            </div>
+
+            <!-- Quote Tweet -->
+            <div class="twitter-card">
+                <div class="tweet-header">
+                    <div class="tweet-avatar"></div>
+                    <div class="tweet-user">
+                        <div class="tweet-name">Web3 Developer</div>
+                        <div class="tweet-handle"><a class="shareable-link" data-url="https://x.com/web3dev">@web3dev</a></div>
+                    </div>
+                    <div class="share-target" data-url="https://x.com/web3dev/status/quote1">Share</div>
+                </div>
+                <div class="tweet-content">
+                    <a class="shareable-link" data-url="https://x.com/web3dev/status/quote1">
+                        This is a game-changer for Web3 social platforms! The integration possibilities are endless 🔥
+                    </a>
+                </div>
+                <div class="tweet-quote">
+                    <div class="tweet-user">
+                        <div class="tweet-name">Tech Innovator</div>
+                        <div class="tweet-handle"><a class="shareable-link" data-url="https://x.com/techinnovator">@techinnovator</a></div>
+                    </div>
+                    <div class="tweet-content">
+                        <a class="shareable-link" data-url="https://x.com/techinnovator/status/original1">
+                            Announcing our new SDK for Web3 social integration. Now developers can easily add token gating, NFT support, and more to their platforms.
+                        </a>
+                    </div>
+                </div>
+                <div class="tweet-stats">
+                    <span>🔄 567</span>
+                    <span>❤️ 1.8K</span>
+                    <span>👁️ 34K</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Second Page Content -->
+        <h3 style="margin: 30px 0 20px">More Tweets</h3>
+        <div>
+            <!-- Technical Thread -->
+            <div class="twitter-card">
+                <div class="tweet-header">
+                    <div class="tweet-avatar"></div>
+                    <div class="tweet-user">
+                        <div class="tweet-name">Smart Contract Expert</div>
+                        <div class="tweet-handle"><a class="shareable-link" data-url="https://x.com/smartcontractdev">@smartcontractdev</a></div>
+                    </div>
+                    <div class="share-target" data-url="https://x.com/smartcontractdev/status/thread2">Share</div>
+                </div>
+                <div class="tweet-content">
+                    <a class="shareable-link" data-url="https://x.com/smartcontractdev/status/thread2">
+                        🧵 Deep dive into token gating implementation
+                        
+                        1/ Here's how to implement token gating in your Web3 social platform using smart contracts...
+                    </a>
+                </div>
+                <div class="tweet-thread">
+                    <div class="thread-line"></div>
+                    <div class="tweet-content" style="margin: 15px 0;">
+                        <a class="shareable-link" data-url="https://x.com/smartcontractdev/status/thread2/2">
+                            2/ First, you'll need to create an ERC20 contract for your access tokens. Here's a basic implementation...
+                        </a>
+                    </div>
+                    <div class="tweet-content" style="margin: 15px 0;">
+                        <a class="shareable-link" data-url="https://x.com/smartcontractdev/status/thread2/3">
+                            3/ Next, create a gating contract that checks token balances...
+                        </a>
+                    </div>
+                    <div class="tweet-content" style="margin: 15px 0;">
+                        <a class="shareable-link" data-url="https://x.com/smartcontractdev/status/thread2/4">
+                            4/ Implement the access control logic in your content contract...
+                        </a>
+                    </div>
+                    <div class="tweet-content" style="margin: 15px 0;">
+                        <a class="shareable-link" data-url="https://x.com/smartcontractdev/status/thread2/5">
+                            5/ Finally, connect it to your frontend using Web3.js or ethers.js
+                        </a>
+                    </div>
+                </div>
+                <div class="tweet-stats">
+                    <span>🔄 1.9K</span>
+                    <span>❤️ 5.2K</span>
+                    <span>👁️ 89K</span>
+                </div>
+            </div>
+
+            <!-- News Update -->
+            <div class="twitter-card">
+                <div class="tweet-header">
+                    <div class="tweet-avatar"></div>
+                    <div class="tweet-user">
+                        <div class="tweet-name">Web3 News</div>
+                        <div class="tweet-handle">@web3news</div>
+                    </div>
+                    <div class="share-target" data-url="https://x.com/web3news/status/news1">Share</div>
+                </div>
+                <div class="tweet-content">
+                    BREAKING: Major social platform announces Web3 integration, including token gating and NFT support. Full story in thread 🧵
+                </div>
+                <div class="tweet-thread">
+                    <div class="thread-line"></div>
+                    <div class="tweet-content" style="margin: 15px 0;">
+                        The platform will support multiple wallet connections and cross-chain compatibility.
+                    </div>
+                    <div class="tweet-content" style="margin: 15px 0;">
+                        Token holders will get exclusive access to premium features and content.
+                    </div>
+                </div>
+                <div class="tweet-stats">
+                    <span>🔄 3.4K</span>
+                    <span>❤️ 9.1K</span>
+                    <span>👁️ 178K</span>
+                </div>
+            </div>
+
+            <!-- Community Poll -->
+            <div class="twitter-card">
+                <div class="tweet-header">
+                    <div class="tweet-avatar"></div>
+                    <div class="tweet-user">
+                        <div class="tweet-name">Web3 Community</div>
+                        <div class="tweet-handle">@web3community</div>
+                    </div>
+                    <div class="share-target" data-url="https://x.com/web3community/status/poll2">Share</div>
+                </div>
+                <div class="tweet-content">
+                    What's the biggest challenge in Web3 social platforms? Vote below! 📊
+                </div>
+                <div class="tweet-poll">
+                    <div class="poll-option">
+                        <div class="poll-bar" style="width: 40%"></div>
+                        <span>User Experience</span>
+                        <span class="poll-percentage">40%</span>
+                    </div>
+                    <div class="poll-option">
+                        <div class="poll-bar" style="width: 30%"></div>
+                        <span>Scalability</span>
+                        <span class="poll-percentage">30%</span>
+                    </div>
+                    <div class="poll-option">
+                        <div class="poll-bar" style="width: 20%"></div>
+                        <span>Interoperability</span>
+                        <span class="poll-percentage">20%</span>
+                    </div>
+                    <div class="poll-option">
+                        <div class="poll-bar" style="width: 10%"></div>
+                        <span>Security</span>
+                        <span class="poll-percentage">10%</span>
+                    </div>
+                </div>
+                <div class="tweet-stats">
+                    <span>🔄 1.1K</span>
+                    <span>❤️ 2.8K</span>
+                    <span>👁️ 52K</span>
+                </div>
+            </div>
+
+            <!-- Feature Announcement -->
+            <div class="twitter-card">
+                <div class="tweet-header">
+                    <div class="tweet-avatar"></div>
+                    <div class="tweet-user">
+                        <div class="tweet-name">Product Updates</div>
+                        <div class="tweet-handle">@productupdates</div>
+                    </div>
+                    <div class="share-target" data-url="https://x.com/productupdates/status/feature1">Share</div>
+                </div>
+                <div class="tweet-content">
+                    🎉 New Feature Alert: You can now share any content directly to your Web3 social profile with our Chrome extension!
+                </div>
+                <div class="tweet-image" style="background-image: url('https://picsum.photos/600/300')"></div>
+                <div class="tweet-stats">
+                    <span>🔄 892</span>
+                    <span>❤️ 2.3K</span>
+                    <span>👁️ 41K</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="floating-heart">
+        <svg viewBox="0 0 24 24">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+    </div>
+
+    <div class="toast" id="toast">
+        <div class="toast-message">
+            <span>✨</span>
+            <span>Shared to <a href="https://hodlocker.com" target="_blank" style="color: #065fd4; text-decoration: none;">Hodlocker</a> & <a href="https://treechat.com" target="_blank" style="color: #065fd4; text-decoration: none;">Treechat</a></span>
+        </div>
+        <div class="toast-actions">
+            <button class="toast-button lock-button" onclick="handleLock()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                Lock
+            </button>
+            <button class="toast-button tip-button" onclick="handleTip()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+                Tip
+            </button>
+        </div>
+    </div>
+
+    <!-- Lock Amount Modal -->
+    <div class="modal" id="lockModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('lockModal')">&times;</button>
+            <div class="modal-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                Lock Amount
+            </div>
+            <div class="amount-label">Choose preset amount</div>
+            <div class="amount-carousel">
+                <button class="carousel-arrow prev" onclick="moveCarousel('lock', -1)">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                    </svg>
+                </button>
+                <div class="carousel-container" id="lockCarousel">
+                    ${generateAmountItems()}
+                </div>
+                <button class="carousel-arrow next" onclick="moveCarousel('lock', 1)">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="or-divider">or</div>
+            <div class="custom-amount-container">
+                <div class="custom-amount-label">Enter custom amount</div>
+                <div class="custom-amount-wrapper">
+                    <span class="dollar-sign">$</span>
+                    <input type="number" class="custom-amount-input" placeholder="0.00" step="0.01" min="0.01" id="lockCustomAmount">
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-button cancel" onclick="closeModal('lockModal')">Cancel</button>
+                <button class="modal-button confirm" onclick="confirmLock()">Lock Content</button>
+            </div>
+            <div class="auto-message-option">
+                <label class="checkbox-container">
+                    <input type="checkbox" id="lockMessageCheckbox" onchange="toggleMessageField('lock')">
+                    <span class="checkmark"></span>
+                    Send message to creator
+                </label>
+                <div class="message-field" id="lockMessageField" style="display: none;">
+                    <textarea id="lockMessageText" class="message-input" placeholder="Your message to the creator">Great content, I just used LikeMe and shared your content on Hodlocker & Treechat</textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tip Amount Modal -->
+    <div class="modal" id="tipModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('tipModal')">&times;</button>
+            <div class="modal-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+                Tip Amount
+            </div>
+            <div class="amount-label">Choose preset amount</div>
+            <div class="amount-carousel">
+                <button class="carousel-arrow prev" onclick="moveCarousel('tip', -1)">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                    </svg>
+                </button>
+                <div class="carousel-container" id="tipCarousel">
+                    ${generateAmountItems()}
+                </div>
+                <button class="carousel-arrow next" onclick="moveCarousel('tip', 1)">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="or-divider">or</div>
+            <div class="custom-amount-container">
+                <div class="custom-amount-label">Enter custom amount</div>
+                <div class="custom-amount-wrapper">
+                    <span class="dollar-sign">$</span>
+                    <input type="number" class="custom-amount-input" placeholder="0.00" step="0.01" min="0.01" id="tipCustomAmount">
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-button cancel" onclick="closeModal('tipModal')">Cancel</button>
+                <button class="modal-button confirm" onclick="confirmTip()">Send Tip</button>
+            </div>
+            <div class="auto-message-option">
+                <label class="checkbox-container">
+                    <input type="checkbox" id="tipMessageCheckbox" onchange="toggleMessageField('tip')">
+                    <span class="checkmark"></span>
+                    Send message to creator
+                </label>
+                <div class="message-field" id="tipMessageField" style="display: none;">
+                    <textarea id="tipMessageText" class="message-input" placeholder="Your message to the creator">Great content, I just shared on Hodlocker & Treechat. I also sent you a tip with LikeMe</textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Tutorial Modal -->
+    <div class="tutorial-modal" id="tutorialModal">
+        <div class="tutorial-content">
+            <button class="tutorial-skip" onclick="skipTutorial()">Skip Tutorial</button>
+            
+            <!-- Step 1: Introduction -->
+            <div class="tutorial-step active" data-step="1">
+                <div class="tutorial-title">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="#ff4d7c">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                    Welcome to LikeMe!
+                </div>
+                <div class="tutorial-description">
+                    LikeMe is a revolutionary way to share and monetize content across platforms. With our floating heart button, you can easily share any content while adding value through tips and locks.
+                </div>
+                <div class="tutorial-image">
+                    <div class="demo-heart" style="left: 50%; top: 50%; transform: translate(-50%, -50%);">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Heart Button -->
+            <div class="tutorial-step" data-step="2">
+                <div class="tutorial-title">
+                    <svg viewBox="0 0 24 24" width="24" height="24">
+                        <path d="M15 15l6 6m-11-4a7 7 0 110-14 7 7 0 010 14z" fill="none" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    Smart Heart Button
+                </div>
+                <div class="tutorial-description">
+                    The heart button follows you around as you browse your favorite platforms like YouTube, GitHub, X (Twitter) and more. It intelligently fades in when you're near shareable content, making it effortless to share anything that catches your eye.
+                </div>
+                <div class="tutorial-image">
+                    <div class="demo-cursor" style="left: 30%; top: 50%;"></div>
+                    <div class="demo-heart" style="left: 40%; top: 50%; opacity: 0.1;">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        </svg>
+                    </div>
+                    <div class="demo-target" style="right: 30%; top: 50%;">Share</div>
+                </div>
+            </div>
+
+            <!-- Step 3: Sharing -->
+            <div class="tutorial-step" data-step="3">
+                <div class="tutorial-title">
+                    <svg viewBox="0 0 24 24" width="24" height="24">
+                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" fill="none" stroke="currentColor" stroke-width="2"/>
+                        <polyline points="16 6 12 2 8 6" fill="none" stroke="currentColor" stroke-width="2"/>
+                        <line x1="12" y1="2" x2="12" y2="15" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    Quick Sharing & Integration
+                </div>
+                <div class="tutorial-description">
+                    Click the heart when it's active to instantly copy the content's URL. The URL is automatically shared to Hodlocker and Treechat, where you can add tips or locks. Want more? Visit LikeMe's advanced settings to connect your favorite Bitcoin apps and expand your sharing capabilities.
+                </div>
+                <div class="tutorial-image">
+                    <div class="demo-heart" style="left: 30%; top: 50%; opacity: 1; background: #ff1f5a;">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        </svg>
+                    </div>
+                    <div class="demo-target" style="right: 30%; top: 50%;">Share</div>
+                </div>
+            </div>
+
+            <!-- Step 4: Tips & Locks -->
+            <div class="tutorial-step" data-step="4">
+                <div class="tutorial-title">
+                    <svg viewBox="0 0 24 24" width="24" height="24">
+                        <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" fill="none" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    Tips & Locks: Two Ways to Engage
+                </div>
+                <div class="tutorial-description" style="display: flex; flex-direction: column; gap: 20px;">
+                    <div>
+                        <strong style="color: #2ecc71; font-size: 18px; display: block; margin-bottom: 8px;">💝 Tips: Support Creators</strong>
+                        Tips are a direct way to support creators you love. Most of your tip goes straight to the original content creator. The best part? If the creator doesn't claim their tip, it automatically returns to you!
+                    </div>
+                    
+                    <div>
+                        <strong style="color: #3498db; font-size: 18px; display: block; margin-bottom: 8px;">🔒 Locks: Boost Visibility</strong>
+                        Locks work differently - they're your way to boost content visibility in rankings. The more you lock, the more visible the content becomes. Don't worry about your funds; your locked amount returns to you after a set number of blocks. Want content to be seen more? Lock more!
+                    </div>
+                    
+                    <div style="font-style: italic; color: #666; margin-top: 10px;">
+                        Remember: Whether you tip or lock, your funds always find their way back to you if unused.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add new Step 5 after Step 4 -->
+            <div class="tutorial-step" data-step="5">
+                <div class="tutorial-title">
+                    <svg viewBox="0 0 24 24" width="24" height="24">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2" fill="none" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    Wallet-less Tipping
+                </div>
+                <div class="tutorial-description" style="display: flex; flex-direction: column; gap: 20px;">
+                    <div>
+                        <strong style="color: #9b59b6; font-size: 18px; display: block; margin-bottom: 8px;">🎯 Tip Anyone, Anywhere</strong>
+                        Want to support a creator but not sure if they have a wallet? No problem!
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                        <p style="margin: 0 0 10px 0;">Here's how it works:</p>
+                        <ol style="margin: 0; padding-left: 20px;">
+                            <li style="margin-bottom: 8px;">Just hover over their username or content and click the heart and add a tip</li>
+                            <li style="margin-bottom: 8px;">They can claim their tips by authenticating their identity</li>
+                            <li style="margin-bottom: 8px;">If they don't claim it, you get your tip back</li>
+                        </ol>
+                    </div>
+                    
+                    <div style="font-style: italic; color: #666; margin-top: 10px;">
+                        Your funds are always safe - either supporting creators or returning to you!
+                    </div>
+                </div>
+                <div class="tutorial-image" style="display: flex; align-items: center; justify-content: center;">
+                    <div style="text-align: center; position: relative;">
+                        <svg viewBox="0 0 24 24" width="60" height="60" style="margin-bottom: 10px;">
+                            <circle cx="12" cy="12" r="10" fill="#9b59b6" opacity="0.2"/>
+                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="#9b59b6" fill="none" stroke-width="2"/>
+                        </svg>
+                        <div style="position: absolute; width: 200px; height: 2px; background: #9b59b6; top: 50%; right: -220px; opacity: 0.3;"></div>
+                        <div style="position: absolute; width: 40px; height: 40px; border-radius: 50%; background: #9b59b6; opacity: 0.2; right: -240px; top: calc(50% - 20px);"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add new Step 6 after Step 5 -->
+            <div class="tutorial-step" data-step="6">
+                <div class="tutorial-title">
+                    <svg viewBox="0 0 24 24" width="24" height="24">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" fill="none" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    Get LikeMe
+                </div>
+                <div class="tutorial-description" style="display: flex; flex-direction: column; gap: 20px;">
+                    <div>
+                        <strong style="color: #e74c3c; font-size: 18px; display: block; margin-bottom: 8px;">🚀 Start Using LikeMe</strong>
+                        Ready to revolutionize how you share and support content?
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; display: flex; gap: 20px;">
+                        <div style="flex: 1; text-align: center; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                            <div style="font-size: 24px; margin-bottom: 10px;">🔌</div>
+                            <strong>Browser Extension</strong>
+                            <p style="margin: 10px 0; color: #666;">Install LikeMe for your browser</p>
+                            <button class="tutorial-button next" style="width: 100%;">Download Extension</button>
+                        </div>
+                        
+                        <div style="flex: 1; text-align: center; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                            <div style="font-size: 24px; margin-bottom: 10px;">📱</div>
+                            <strong>Mobile App</strong>
+                            <p style="margin: 10px 0; color: #666;">Get LikeMe on your phone</p>
+                            <button class="tutorial-button next" style="width: 100%;">Download App</button>
+                        </div>
+                    </div>
+                    
+                    <div style="font-style: italic; color: #666; margin-top: 10px; text-align: center;">
+                        One-click install, no registration needed. Start sharing and supporting content instantly!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="tutorial-navigation">
+                <button class="tutorial-button prev" onclick="prevStep()" disabled>Previous</button>
+                <div class="tutorial-dots"></div>
+                <button class="tutorial-button next" onclick="nextStep()">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const heart = document.querySelector('.floating-heart');
+        const toast = document.getElementById('toast');
+        let currentTarget = null;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+        const SNAP_THRESHOLD = 150; // Distance in pixels to snap to a target
+
+        // Initial position
+        heart.style.left = '20px';
+        heart.style.top = '20px';
+
+        function isMovingTowardsHeart(mouseX, mouseY) {
+            const heartRect = heart.getBoundingClientRect();
+            const heartCenterX = heartRect.left + heartRect.width / 2;
+            const heartCenterY = heartRect.top + heartRect.height / 2;
+
+            // Calculate direction vectors
+            const mouseDirection = {
+                x: mouseX - lastMouseX,
+                y: mouseY - lastMouseY
+            };
+
+            const toHeartVector = {
+                x: heartCenterX - mouseX,
+                y: heartCenterY - mouseY
+            };
+
+            // Calculate dot product to determine if moving towards heart
+            const dotProduct = (mouseDirection.x * toHeartVector.x) + (mouseDirection.y * toHeartVector.y);
+            
+            // Calculate distance to heart
+            const distanceToHeart = Math.sqrt(
+                Math.pow(mouseX - heartCenterX, 2) + 
+                Math.pow(mouseY - heartCenterY, 2)
+            );
+
+            // Return true if moving towards heart and within reasonable distance
+            return dotProduct > 0 && distanceToHeart < SNAP_THRESHOLD;
+        }
+
+        function updateHeartPosition(mouseX, mouseY) {
+            const shareableElements = initializeShareableElements();
+            let closestTarget = null;
+            let closestDistance = Infinity;
+            let targetPosition = { x: 0, y: 0 };
+
+            // If moving towards heart, maintain current position
+            if (isMovingTowardsHeart(mouseX, mouseY)) {
+                lastMouseX = mouseX;
+                lastMouseY = mouseY;
+                return;
+            }
+
+            // Check if we're hovering over any shareable element first
+            const hoveredElement = shareableElements.find(el => {
+                const rect = el.getBoundingClientRect();
+                return mouseX >= rect.left && mouseX <= rect.right && 
+                       mouseY >= rect.top && mouseY <= rect.bottom;
+            });
+
+            // If we're hovering over an element, prioritize it
+            if (hoveredElement) {
+                const rect = hoveredElement.getBoundingClientRect();
+                closestTarget = hoveredElement;
+                targetPosition = {
+                    x: rect.left - heart.offsetWidth - 10,
+                    y: rect.top + (rect.height - heart.offsetHeight) / 2
+                };
+            } else {
+                // Otherwise, find the closest element within snap threshold
+                shareableElements.forEach(target => {
+                    const rect = target.getBoundingClientRect();
+                    const snapPoint = {
+                        x: rect.left - heart.offsetWidth - 10,
+                        y: rect.top + (rect.height - heart.offsetHeight) / 2
+                    };
+
+                    const distance = getDistance(mouseX, mouseY, snapPoint.x + heart.offsetWidth / 2, snapPoint.y + heart.offsetHeight / 2);
+                    if (distance < closestDistance && distance < SNAP_THRESHOLD) {
+                        closestDistance = distance;
+                        closestTarget = target;
+                        targetPosition = snapPoint;
+                    }
+                });
+            }
+
+            // Update heart position and state
+            if (closestTarget !== currentTarget) {
+                currentTarget = closestTarget;
+                
+                if (currentTarget) {
+                    heart.style.left = `${targetPosition.x}px`;
+                    heart.style.top = `${targetPosition.y}px`;
+                    heart.classList.add('active');
+                } else {
+                    heart.classList.remove('active');
+                }
+            }
+
+            // Update last mouse position
+            lastMouseX = mouseX;
+            lastMouseY = mouseY;
+        }
+
+        // Make all links and share buttons shareable
+        function initializeShareableElements() {
+            // Get all share buttons and links
+            const shareButtons = document.querySelectorAll('.share-target');
+            const links = document.querySelectorAll('a, .repo-name, .youtube-title, .tweet-content a');
+
+            // Add data-url attributes to links if they don't have them
+            links.forEach(link => {
+                if (!link.dataset.url) {
+                    if (link.href) {
+                        link.dataset.url = link.href;
+                    } else if (link.textContent) {
+                        // For non-anchor elements, create a relevant URL based on content
+                        const text = link.textContent.trim();
+                        if (link.classList.contains('repo-name')) {
+                            link.dataset.url = `https://github.com/username/${text}`;
+                        } else if (link.classList.contains('youtube-title')) {
+                            link.dataset.url = `https://youtube.com/watch?v=${text.toLowerCase().replace(/\s+/g, '-')}`;
+                        }
+                    }
+                }
+                link.classList.add('shareable-link');
+
+                // Add hover effect styles
+                link.addEventListener('mouseenter', () => {
+                    link.style.position = 'relative';
+                    link.style.zIndex = '1000';
+                });
+
+                link.addEventListener('mouseleave', () => {
+                    link.style.position = '';
+                    link.style.zIndex = '';
+                });
+            });
+
+            return [...shareButtons, ...links].filter(el => el.dataset.url);
+        }
+
+        function getDistance(x1, y1, x2, y2) {
+            return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        }
+
+        // Throttle the mousemove event to improve performance
+        let ticking = false;
+        document.addEventListener('mousemove', (e) => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    updateHeartPosition(e.clientX, e.clientY);
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+
+        // Click to copy URL
+        heart.addEventListener('click', () => {
+            if (currentTarget && currentTarget.dataset.url) {
+                navigator.clipboard.writeText(currentTarget.dataset.url).then(() => {
+                    const toast = document.getElementById('toast');
+                    // Show toast notification
+                    toast.classList.add('show');
+                    setTimeout(() => {
+                        toast.classList.remove('show');
+                    }, 5000);
+                });
+            }
+        });
+
+        function handleLock() {
+            document.getElementById('lockModal').classList.add('show-modal');
+            document.body.style.overflow = 'hidden'; // Prevent body scroll
+        }
+
+        function handleTip() {
+            document.getElementById('tipModal').classList.add('show-modal');
+            document.body.style.overflow = 'hidden'; // Prevent body scroll
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show-modal');
+            document.body.style.overflow = ''; // Restore body scroll
+            // Reset carousel to first item
+            const type = modalId.replace('Modal', '').toLowerCase();
+            carouselState[type].currentIndex = 0;
+            updateCarouselDisplay(type);
+            // Clear the custom amount input
+            document.getElementById(`${type}CustomAmount`).value = '';
+            // Reset message field
+            document.getElementById(`${type}MessageCheckbox`).checked = false;
+            document.getElementById(`${type}MessageField`).style.display = 'none';
+            document.getElementById(`${type}MessageText`).value = type === 'tip' ? 
+                'Great content, I just shared on Hodlocker & Treechat. I also sent you a tip with LikeMe' :
+                'Great content, I just used LikeMe and shared your content on Hodlocker & Treechat';
+        }
+
+        // Carousel functionality
+        const carouselState = {
+            lock: { currentIndex: 0, items: [], isDragging: false, startY: 0, currentTranslate: 0 },
+            tip: { currentIndex: 0, items: [], isDragging: false, startY: 0, currentTranslate: 0 }
+        };
+
+        // Add scroll debouncing variables
+        const scrollState = {
+            lock: { timeout: null, lastScrollTime: 0 },
+            tip: { timeout: null, lastScrollTime: 0 }
+        };
+
+        function initializeCarousels() {
+            ['lock', 'tip'].forEach(type => {
+                const carousel = document.getElementById(`${type}Carousel`);
+                
+                // Generate and set amount items
+                carousel.innerHTML = generateAmountItems();
+                carouselState[type].items = Array.from(carousel.children);
+                carouselState[type].currentIndex = 0;
+                
+                // Add touch and mouse events
+                carousel.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    if (e.target.classList.contains('amount-item')) {
+                        // If clicking directly on an amount item, don't start dragging
+                        return;
+                    }
+                    startDragging(e, type);
+                });
+                
+                carousel.addEventListener('touchstart', (e) => {
+                    if (e.target.classList.contains('amount-item')) {
+                        // If touching directly on an amount item, don't start dragging
+                        return;
+                    }
+                    startDragging(e, type);
+                }, { passive: false });
+                
+                carousel.addEventListener('mousemove', (e) => {
+                    e.preventDefault();
+                    drag(e, type);
+                });
+                
+                carousel.addEventListener('touchmove', (e) => {
+                    drag(e, type);
+                }, { passive: false });
+                
+                carousel.addEventListener('mouseup', () => endDragging(type));
+                carousel.addEventListener('touchend', () => endDragging(type));
+                carousel.addEventListener('mouseleave', () => endDragging(type));
+                
+                // Simplified wheel event handler
+                let isScrolling = false;
+                carousel.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    
+                    if (!isScrolling) {
+                        isScrolling = true;
+                        
+                        const direction = e.deltaY > 0 ? 1 : -1;
+                        moveCarousel(type, direction);
+                        
+                        setTimeout(() => {
+                            isScrolling = false;
+                        }, 100);
+                    }
+                }, { passive: false });
+
+                // Position items initially
+                updateCarouselDisplay(type);
+            });
+        }
+
+        function startDragging(e, type) {
+            const state = carouselState[type];
+            state.isDragging = true;
+            state.startY = e.type === 'mousedown' ? e.clientY : e.touches[0].clientY;
+            state.currentTranslate = 0;
+        }
+
+        function drag(e, type) {
+            const state = carouselState[type];
+            if (!state.isDragging) return;
+            
+            e.preventDefault();
+            const currentY = e.type === 'mousemove' ? e.clientY : e.touches[0].clientY;
+            state.currentTranslate = currentY - state.startY;
+
+            if (Math.abs(state.currentTranslate) > 30) {
+                moveCarousel(type, state.currentTranslate > 0 ? -1 : 1);
+                endDragging(type);
+            }
+        }
+
+        function endDragging(type) {
+            const state = carouselState[type];
+            state.isDragging = false;
+        }
+
+        function updateCarouselDisplay(type) {
+            const items = carouselState[type].items;
+            const currentIndex = carouselState[type].currentIndex;
+            const totalItems = items.length;
+            
+            // Update display value in modal
+            const modalTitle = document.querySelector(`#${type}Modal .modal-title`);
+            const currentAmount = items[currentIndex].dataset.value;
+            // Format the amount for display
+            let displayAmount;
+            const amount = parseFloat(currentAmount);
+            if (amount < 1) {
+                displayAmount = amount.toFixed(2);
+            } else if (Number.isInteger(amount)) {
+                displayAmount = amount.toString();
+            } else {
+                displayAmount = amount.toFixed(2);
+            }
+            
+            modalTitle.innerHTML = `
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    ${type === 'lock' ? 
+                        '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>' : 
+                        '<path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>'}
+                </svg>
+                ${type === 'lock' ? 'Lock' : 'Tip'} Amount: $${displayAmount}
+            `;
+            
+            items.forEach((item, index) => {
+                // Remove all position classes and reset styles
+                item.classList.remove('active', 'above-1', 'above-2', 'below-1', 'below-2');
+                item.style.opacity = '';
+                item.style.transform = '';
+                item.style.pointerEvents = 'none';
+                
+                // Calculate the shortest distance considering wrap-around
+                let diff = index - currentIndex;
+                if (diff > totalItems / 2) diff -= totalItems;
+                if (diff < -totalItems / 2) diff += totalItems;
+                
+                // Show 2 items above and below the current item
+                if (Math.abs(diff) <= 2) {
+                    if (diff === 0) {
+                        item.classList.add('active');
+                    } else if (diff === -1) {
+                        item.classList.add('above-1');
+                    } else if (diff === -2) {
+                        item.classList.add('above-2');
+                    } else if (diff === 1) {
+                        item.classList.add('below-1');
+                    } else if (diff === 2) {
+                        item.classList.add('below-2');
+                    }
+                    // Make visible items clickable
+                    item.style.pointerEvents = 'auto';
+                    
+                    // Add click handler
+                    item.onclick = () => {
+                        carouselState[type].currentIndex = index;
+                        updateCarouselDisplay(type);
+                    };
+                } else {
+                    // Hide items that are too far from current selection
+                    item.style.opacity = '0';
+                    item.style.transform = `translateY(${diff * 60}px) scale(0.5)`;
+                    item.style.pointerEvents = 'none';
+                    item.onclick = null;
+                }
+            });
+        }
+
+        function moveCarousel(type, direction) {
+            const state = carouselState[type];
+            const totalItems = state.items.length;
+            let newIndex = state.currentIndex + direction;
+            
+            // Implement smooth wrapping
+            if (newIndex >= totalItems) {
+                newIndex = 0;
+            } else if (newIndex < 0) {
+                newIndex = totalItems - 1;
+            }
+            
+            // Only update if the index actually changed
+            if (newIndex !== state.currentIndex) {
+                state.currentIndex = newIndex;
+                updateCarouselDisplay(type);
+            }
+        }
+
+        function handleWheel(e, type) {
+            const now = Date.now();
+            const state = scrollState[type];
+            
+            // Clear any pending timeout
+            if (state.timeout) {
+                clearTimeout(state.timeout);
+            }
+
+            // Check if enough time has passed since last scroll
+            if (now - state.lastScrollTime > 50) { // 50ms threshold
+                const direction = e.deltaY > 0 ? 1 : -1;
+                moveCarousel(type, direction);
+                state.lastScrollTime = now;
+            }
+
+            // Set a timeout to prevent rapid scrolling
+            state.timeout = setTimeout(() => {
+                state.timeout = null;
+            }, 50);
+        }
+
+        function confirmLock() {
+            const customAmount = document.getElementById('lockCustomAmount').value;
+            const carouselAmount = carouselState.lock.items[carouselState.lock.currentIndex].dataset.value;
+            const amount = customAmount || carouselAmount;
+            const sendMessage = document.getElementById('lockMessageCheckbox').checked;
+            
+            // Format the amount for display
+            const displayAmount = formatTipAmount(amount);
+            const message = document.getElementById('lockMessageText').value;
+            
+            alert(`Content locked with $${displayAmount} tokens! 🔒${sendMessage ? '\nMessage sent to creator: "' + message + '"' : ''}`);
+            closeModal('lockModal');
+        }
+
+        function confirmTip() {
+            const customAmount = document.getElementById('tipCustomAmount').value;
+            const carouselAmount = carouselState.tip.items[carouselState.tip.currentIndex].dataset.value;
+            const amount = customAmount || carouselAmount;
+            const sendMessage = document.getElementById('tipMessageCheckbox').checked;
+            
+            // Format the amount for display
+            const displayAmount = formatTipAmount(amount);
+            
+            // Update message with current tip amount if checkbox is checked
+            if (sendMessage) {
+                document.getElementById('tipMessageText').value = `Great content, I just shared on Hodlocker & Treechat. I also sent you a $${displayAmount} tip with LikeMe`;
+            }
+            const message = document.getElementById('tipMessageText').value;
+            
+            alert(`Tip of $${displayAmount} tokens sent! 💰${sendMessage ? '\nMessage sent to creator: "' + message + '"' : ''}`);
+            closeModal('tipModal');
+        }
+
+        // Update positions on scroll
+        window.addEventListener('scroll', () => {
+            if (currentTarget) {
+                const rect = currentTarget.getBoundingClientRect();
+                // Always position on the left side when scrolling
+                heart.style.left = `${rect.left - heart.offsetWidth - 10}px`;
+                heart.style.top = `${rect.top + (rect.height - heart.offsetHeight) / 2}px`;
+            }
+        });
+
+        // Initialize shareable elements when the page loads
+        initializeShareableElements();
+
+        // Update URL display
+        document.getElementById('current-url').textContent = window.location.href;
+
+        // Handle static heart click
+        document.querySelector('.static-heart').addEventListener('click', () => {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                const toast = document.getElementById('toast');
+                // Show toast notification
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 5000);
+            });
+        });
+
+        // Initialize carousels when page loads
+        document.addEventListener('DOMContentLoaded', initializeCarousels);
+
+        // Generate specific amount items
+        function generateAmountItems() {
+            const amounts = [0.01, 0.05, 0.10, 0.25, 0.50, 1, 5, 10, 25, 50, 100, 500, 1000];
+            let items = '';
+            
+            amounts.forEach(amount => {
+                // Format the amount to always show cents for values under 1
+                // and no decimal for whole numbers above 1
+                let displayAmount;
+                if (amount < 1) {
+                    displayAmount = amount.toFixed(2);
+                } else if (Number.isInteger(amount)) {
+                    displayAmount = amount.toString();
+                } else {
+                    displayAmount = amount.toFixed(2);
+                }
+                
+                items += `<div class="amount-item" data-value="${amount}">$${displayAmount}</div>`;
+            });
+            
+            return items;
+        }
+
+        // Add tutorial JavaScript
+        let currentStep = 1;
+        const totalSteps = 6;  // Updated from 5 to 6
+
+        // Initialize tutorial
+        function initTutorial() {
+            // Create dots
+            const dotsContainer = document.querySelector('.tutorial-dots');
+            for (let i = 1; i <= totalSteps; i++) {
+                const dot = document.createElement('div');
+                dot.className = `tutorial-dot ${i === 1 ? 'active' : ''}`;
+                dot.onclick = () => goToStep(i);
+                dotsContainer.appendChild(dot);
+            }
+
+            // Show tutorial if first visit
+            if (!localStorage.getItem('tutorialSeen')) {
+                showTutorial();
+            }
+
+            // Add demo animations
+            animateStep1();
+        }
+
+        function showTutorial() {
+            document.getElementById('tutorialModal').style.display = 'flex';
+            currentStep = 1;
+            updateTutorialState();
+        }
+
+        function skipTutorial() {
+            document.getElementById('tutorialModal').style.display = 'none';
+            localStorage.setItem('tutorialSeen', 'true');
+        }
+
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateTutorialState();
+            } else {
+                skipTutorial();
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateTutorialState();
+            }
+        }
+
+        function goToStep(step) {
+            currentStep = step;
+            updateTutorialState();
+        }
+
+        function updateTutorialState() {
+            // Update steps
+            document.querySelectorAll('.tutorial-step').forEach(step => {
+                step.classList.remove('active');
+                if (step.dataset.step == currentStep) {
+                    step.classList.add('active');
+                }
+            });
+
+            // Update dots
+            document.querySelectorAll('.tutorial-dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index + 1 === currentStep);
+            });
+
+            // Update buttons
+            document.querySelector('.tutorial-button.prev').disabled = currentStep === 1;
+            const nextButton = document.querySelector('.tutorial-button.next');
+            nextButton.textContent = currentStep === totalSteps ? 'Get Started' : 'Next';
+
+            // Trigger step-specific animations
+            switch(currentStep) {
+                case 1:
+                    animateStep1();
+                    break;
+                case 2:
+                    animateStep2();
+                    break;
+                case 3:
+                    animateStep3();
+                    break;
+                case 4:
+                    animateStep4();
+                    break;
+                case 5:
+                    animateStep5();
+                    break;
+                case 6:
+                    animateStep6();
+                    break;
+            }
+        }
+
+        // Step-specific animations
+        function animateStep1() {
+            const heart = document.querySelector('.tutorial-step[data-step="1"] .demo-heart');
+            heart.style.transform = 'translate(-50%, -50%) scale(1.1)';
+            setTimeout(() => {
+                heart.style.transform = 'translate(-50%, -50%) scale(1)';
+            }, 500);
+        }
+
+        function animateStep2() {
+            const cursor = document.querySelector('.tutorial-step[data-step="2"] .demo-cursor');
+            const heart = document.querySelector('.tutorial-step[data-step="2"] .demo-heart');
+            const target = document.querySelector('.tutorial-step[data-step="2"] .demo-target');
+
+            // Reset positions
+            cursor.style.left = '30%';
+            heart.style.left = '40%';
+            heart.style.opacity = '0.1';
+
+            // Animate
+            setTimeout(() => {
+                cursor.style.left = '60%';
+                heart.style.left = '70%';
+                heart.style.opacity = '1';
+            }, 1000);
+        }
+
+        function animateStep3() {
+            const heart = document.querySelector('.tutorial-step[data-step="3"] .demo-heart');
+            
+            // Pulse animation
+            setInterval(() => {
+                heart.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    heart.style.transform = 'scale(1)';
+                }, 200);
+            }, 2000);
+        }
+
+        function animateStep4() {
+            const buttons = document.querySelector('.tutorial-step[data-step="4"] .tutorial-image');
+            buttons.style.transform = 'translateY(-5px)';
+            setTimeout(() => {
+                buttons.style.transform = 'translateY(0)';
+            }, 500);
+        }
+
+        function animateStep5() {
+            const heart = document.querySelector('.tutorial-step[data-step="5"] .demo-heart');
+            heart.style.transform = 'translate(-50%, -50%) scale(1.1)';
+            setTimeout(() => {
+                heart.style.transform = 'translate(-50%, -50%) scale(1)';
+            }, 500);
+        }
+
+        function animateStep6() {
+            const heart = document.querySelector('.tutorial-step[data-step="6"] .demo-heart');
+            heart.style.transform = 'translate(-50%, -50%) scale(1.1)';
+            setTimeout(() => {
+                heart.style.transform = 'translate(-50%, -50%) scale(1)';
+            }, 500);
+        }
+
+        // Initialize tutorial when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initTutorial();
+            // Add tutorial button to header
+            const header = document.querySelector('.header');
+            const tutorialButton = document.createElement('button');
+            tutorialButton.className = 'show-tutorial-btn';
+            tutorialButton.innerHTML = '✨ Show Tutorial';
+            tutorialButton.onclick = showTutorial;
+            header.appendChild(tutorialButton);
+        });
+
+        // Add new function to toggle message field
+        function toggleMessageField(type) {
+            const checkbox = document.getElementById(`${type}MessageCheckbox`);
+            const messageField = document.getElementById(`${type}MessageField`);
+            const messageText = document.getElementById(`${type}MessageText`);
+            
+            if (checkbox.checked) {
+                messageField.style.display = 'block';
+                if (type === 'tip') {
+                    const customAmount = document.getElementById('tipCustomAmount').value;
+                    const carouselAmount = carouselState.tip.items[carouselState.tip.currentIndex].dataset.value;
+                    const amount = formatTipAmount(customAmount || carouselAmount);
+                    messageText.value = `Great content, I just shared on Hodlocker & Treechat. I also sent you a $${amount} tip with LikeMe`;
+                } else {
+                    messageText.value = 'Great content, I just used LikeMe and shared your content on Hodlocker & Treechat';
+                }
+                messageText.focus();
+            } else {
+                messageField.style.display = 'none';
+                messageText.value = type === 'tip' ? 
+                    'Great content, I just shared on Hodlocker & Treechat. I also sent you a tip with LikeMe' :
+                    'Great content, I just used LikeMe and shared your content on Hodlocker & Treechat';
+            }
+        }
+
+        // Add function to format tip amount
+        function formatTipAmount(amount) {
+            const numAmount = parseFloat(amount);
+            if (numAmount < 1) {
+                return numAmount.toFixed(2);
+            } else if (Number.isInteger(numAmount)) {
+                return numAmount.toString();
+            }
+            return numAmount.toFixed(2);
+        }
+    </script>
+</body>
+</html> 
